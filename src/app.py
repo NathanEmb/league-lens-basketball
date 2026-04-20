@@ -338,6 +338,80 @@ async def analyze_trade(request: Request):
     }
 
 
+@app.get("/freeagents")
+async def free_agents_analyzer(request: Request):
+    """Free agents analyzer page suggesting best fits for a team."""
+    # Get all players with projections
+    all_players = be.get_all_players_with_projections(league_data)
+    
+    # Organize players by team
+    players_by_team = {}
+    for player in all_players:
+        team_name = player["team_name"]
+        if team_name not in players_by_team:
+            players_by_team[team_name] = []
+        players_by_team[team_name].append(player)
+    
+    # Get team lineup for analysis
+    lineup_players = [p for p in all_players if p["position"] in ["F", "G", "C"]]
+    
+    return templates.TemplateResponse(
+        "freeagents.html",
+        {
+            "request": request,
+            "page_type": "freeagents",
+            "all_players": all_players,
+            "players_by_team": players_by_team,
+            "lineup_players": lineup_players,
+            "teams": teams,
+            "matchups": matchups_cache,
+            "last_update": last_update,
+        },
+    )
+
+
+@app.post("/freeagents/analyze")
+async def analyze_free_agent(request: Request):
+    """API endpoint to analyze best free agent fits for a team."""
+    data = await request.json()
+    
+    team_name = data.get("team")
+    
+    # Get team strengths and weaknesses
+    strengths, weaknesses = be.get_team_strengths_weaknesses(league_df, team_name)
+    
+    # Filter to players not on the same team
+    eligible_players = [
+        p for p in all_players
+        if p["team_name"] != team_name and p["position"] in ["F", "G", "C"]
+    ]
+    
+    # Calculate fit scores for all eligible players
+    player_scores = []
+    for player in eligible_players:
+        fit_data = be.calculate_fit_score(player, strengths, weaknesses, league_df)
+        player_scores.append({
+            **player,
+            "fit_score": fit_data["fit_score"],
+            "category_breakdown": fit_data["category_breakdown"],
+            "strengths_gain": fit_data["strengths_gain"],
+            "weaknesses_accept": fit_data["weaknesses_accept"],
+            "neutral_gain": fit_data["neutral_gain"],
+        })
+    
+    # Sort by fit score and get top 3
+    player_scores.sort(key=lambda x: x["fit_score"], reverse=True)
+    top_3 = player_scores[:3]
+    
+    return {
+        "team": team_name,
+        "strengths": strengths,
+        "weaknesses": weaknesses,
+        "all_player_scores": player_scores,
+        "top_3_suggestions": top_3,
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
 

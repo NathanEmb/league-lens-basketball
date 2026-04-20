@@ -89,6 +89,139 @@ def get_league_box_scores(league: League):
     return league.box_scores(league.currentMatchupPeriod)
 
 
+def get_team_strengths_weaknesses(league_df: pd.DataFrame, team_name: str) -> tuple[list, list]:
+    """Get a team's strengths (top 5) and weaknesses (bottom 5) from league rankings.
+    
+    Args:
+        league_df: League rankings dataframe.
+        team_name: Name of the team to analyze.
+    
+    Returns:
+        Tuple of (strengths, weaknesses) where each is a list of dicts with 'label', 'rank', and 'diff' keys.
+    """
+    team_row = league_df[league_df["Team"] == team_name].to_dict("records")[0]
+    
+    strengths = []
+    weaknesses = []
+    
+    for cat in const.NINE_CATS:
+        rank = team_row.get(cat)
+        if rank is None:
+            continue
+            
+        # Calculate difference from average rank (middle of league)
+        avg_rank = (len(league_df) + 1) / 2
+        diff = rank - avg_rank
+        
+        # Top 5 are strengths (rank <= 5)
+        if rank <= 5:
+            strengths.append({"label": cat, "rank": rank, "diff": diff})
+        # Bottom 5 are weaknesses (rank >= 8)
+        elif rank >= 8:
+            weaknesses.append({"label": cat, "rank": rank, "diff": diff})
+    
+    return strengths, weaknesses
+
+
+def calculate_fit_score(
+    free_agent: dict,
+    team_strengths: list,
+    team_weaknesses: list,
+    league_df: pd.DataFrame,
+) -> dict:
+    """Calculate how well a free agent fits a team's strengths and weaknesses.
+    
+    Maximizes gains in strong categories and accepts losses in weak categories.
+    
+    Args:
+        free_agent: Player data with stats for each category.
+        team_strengths: List of strength dicts from team analysis.
+        team_weaknesses: List of weakness dicts from team analysis.
+        league_df: League rankings dataframe for calculating team ranks.
+    
+    Returns:
+        Dict with fit_score, category_breakdown, and recommendation.
+    """
+    score = 0
+    category_breakdown = []
+    total_points = 0
+    
+    # Get current team rank for each category
+    team_ranks = {}
+    if free_agent.get("team_name") in league_df["Team"].values:
+        team_row = league_df[league_df["Team"] == free_agent["team_name"]].to_dict("records")[0]
+        for cat in const.NINE_CATS:
+            team_ranks[cat] = team_row.get(cat, 99)
+    
+    for cat in const.NINE_CATS:
+        agent_val = free_agent.get(cat, 0)
+        team_rank = team_ranks.get(cat, 99)
+        
+        # Get strength/weakness info for this category
+        strength_info = next((s for s in team_strengths if s["label"] == cat), None)
+        weakness_info = next((w for w in team_weaknesses if w["label"] == cat), None)
+        
+        # Determine if this is a gain or loss
+        if strength_info:
+            # This is a strength - gain points
+            gain = agent_val
+            score += gain
+            category_breakdown.append({
+                "category": cat,
+                "agent": agent_val,
+                "team_rank": strength_info["rank"],
+                "type": "gain",
+                "points": agent_val
+            })
+            total_points += agent_val
+        elif weakness_info:
+            # This is a weakness - accept loss (don't penalize heavily)
+            score += 0  # Neutral - we accept the loss
+            category_breakdown.append({
+                "category": cat,
+                "agent": agent_val,
+                "team_rank": weakness_info["rank"],
+                "type": "accept",
+                "points": agent_val
+            })
+            total_points += agent_val
+        else:
+            # Neutral category - gain if agent outperforms team average
+            avg_rank = (len(league_df) + 1) / 2
+            if agent_val > (avg_rank * 10):  # Rough estimate
+                score += agent_val
+                category_breakdown.append({
+                    "category": cat,
+                    "agent": agent_val,
+                    "team_rank": team_rank,
+                    "type": "gain",
+                    "points": agent_val
+                })
+                total_points += agent_val
+            else:
+                score += 0
+                category_breakdown.append({
+                    "category": cat,
+                    "agent": agent_val,
+                    "team_rank": team_rank,
+                    "type": "neutral",
+                    "points": agent_val
+                })
+                total_points += agent_val
+    
+    # Normalize score for comparison
+    max_possible_score = sum(free_agent.get(cat, 0) for cat in const.NINE_CATS)
+    fit_score = round((score / max_possible_score * 100) if max_possible_score > 0 else 0, 2)
+    
+    return {
+        "fit_score": fit_score,
+        "category_breakdown": category_breakdown,
+        "strengths_gain": sum(b["points"] for b in category_breakdown if b["type"] == "gain"),
+        "weaknesses_accept": sum(b["points"] for b in category_breakdown if b["type"] == "accept"),
+        "neutral_gain": sum(b["points"] for b in category_breakdown if b["type"] == "neutral"),
+    }
+
+
 def get_all_players_with_projections(league: League) -> list[dict]:
     """Get all players from all teams with their projected stats."""
     all_players = []
