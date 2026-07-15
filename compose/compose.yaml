@@ -1,0 +1,21 @@
+services:
+  league-lens-basketball:
+    image: ghcr.io/nathanemb/league-lens-basketball:latest
+    ports:
+      - "8000:8000"
+
+    environment:
+      # Replace with your ESPN league ID
+      LEAGUE_ID: ""
+      # Optionally customize the dashboard name
+      APP_NAME: "LeagueLens Basketball"
+      # Season year (defaults to current year if unset)
+      YEAR: "INSERT-YOUR-SEASON-YEAR-HERE"
+      # Custom logo URL (defaults to basketball SVG)
+      LOGO_URL: "INSERT-YOUR-LOGO-URL-HERE"
+      # Custom favicon URL (defaults to basketball SVG)
+      FAVICON_URL: "INSERT-YOUR-FAVICON-URL-HERE"
+      # Container port (don't change unless you also change ports above)
+      PORT: "8000"
+
+    restart: unless-stopped
