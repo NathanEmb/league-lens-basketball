@@ -87,7 +87,6 @@ Open `http://localhost:8000` (or your custom port).
 | `APP_NAME` | No | `LeagueLens Basketball` | Dashboard name shown in the header and page titles |
 | `LOGO_URL` | No | Basketball SVG | URL for a custom logo image in the nav bar |
 | `FAVICON_URL` | No | Basketball SVG | URL for a custom favicon |
-| `API_ANALYTICS_KEY` | No | — | API key for [api-analytics.net](https://api-analytics.net) middleware |
 | `YEAR` | No | Current year | Season year for data fetching |
 | `PORT` | No | `8000` | Server port inside the container |
 | `HOST_PORT` | No | `8000` | Host port to bind (Docker only) |

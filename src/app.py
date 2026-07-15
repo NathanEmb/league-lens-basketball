@@ -5,7 +5,6 @@ import zoneinfo
 from contextlib import asynccontextmanager
 from datetime import datetime
 
-from api_analytics.fastapi import Analytics
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -24,7 +23,6 @@ for handler in logging.getLogger().handlers:
 
 # Configuration
 REFRESH_INTERVAL_SECONDS = 3600  # 1 hour
-API_ANALYTICS_KEY = os.environ.get("API_ANALYTICS_KEY")
 APP_NAME = os.environ.get("APP_NAME", "LeagueLens Basketball")
 LOGO_URL = os.environ.get("LOGO_URL")
 FAVICON_URL = os.environ.get("FAVICON_URL")
@@ -82,9 +80,6 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title=APP_NAME, lifespan=lifespan)
-if API_ANALYTICS_KEY:
-    logger.info(" Adding API Analytics middleware")
-    app.add_middleware(Analytics, api_key=API_ANALYTICS_KEY)
 # Setup templates
 templates = Jinja2Templates(directory="src/frontend/templates")
 
