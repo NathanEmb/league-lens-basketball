@@ -104,9 +104,9 @@ async def home(request: Request):
     league_df_dict = league_df.to_dict("records")
 
     return templates.TemplateResponse(
+        request,
         "index.html",
         {
-            "request": request,
             "page_type": "home",
             "app_name": APP_NAME,
             "logo_url": LOGO_URL,
@@ -141,9 +141,9 @@ async def team_viewer(request: Request, team_name: str):
     strengths, weaknesses, punts = be.get_team_breakdown(team_data)
 
     return templates.TemplateResponse(
+        request,
         "team.html",
         {
-            "request": request,
             "page_type": "team",
             "app_name": APP_NAME,
             "logo_url": LOGO_URL,
@@ -254,9 +254,9 @@ async def matchup_viewer(request: Request, matchup_index: int = 0):
             )
 
     return templates.TemplateResponse(
+        request,
         "matchup.html",
         {
-            "request": request,
             "page_type": "matchup",
             "app_name": APP_NAME,
             "logo_url": LOGO_URL,
@@ -287,9 +287,9 @@ async def trade_analyzer(request: Request):
     players_by_team = be.get_players_by_team(league_data)
 
     return templates.TemplateResponse(
+        request,
         "trade.html",
         {
-            "request": request,
             "page_type": "trade",
             "app_name": APP_NAME,
             "logo_url": LOGO_URL,
