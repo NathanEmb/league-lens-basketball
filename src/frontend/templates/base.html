@@ -86,7 +86,10 @@
     </div>
 
     <footer class="site-footer">
-        <p>&copy; {{ current_year }} {{ app_name }}</p>
+        <p>
+            &copy; {{ current_year }} {{ app_name }} &middot;
+            Powered by <a href="https://github.com/NathanEmb/league-lens-basketball">LeagueLens Basketball</a>
+        </p>
         {% if last_update %}
         <p class="last-update">Data updated: <span id="last-update-time" data-utc="{{ last_update.isoformat() }}"></span></p>
         {% endif %}
