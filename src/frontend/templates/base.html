@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Space Jammers Dashboard{% endblock %}</title>
-    <link rel="icon" href="https://spacejam-dashboard.s3.us-east-2.amazonaws.com/assets/the-last-spacejam.jpg">
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    {% if favicon_url %}
+    <link rel="icon" href="{{ favicon_url }}">
+    {% else %}
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23E87722' stroke='%23C25A00' stroke-width='2'/><path d='M50 5 Q35 35 50 50 Q65 65 50 95' stroke='%23C25A00' stroke-width='2' fill='none'/><path d='M50 5 Q65 35 50 50 Q35 65 50 95' stroke='%23C25A00' stroke-width='2' fill='none'/><path d='M12 30 Q30 40 50 50 Q70 60 88 30' stroke='%23C25A00' stroke-width='1.5' fill='none'/><path d='M12 70 Q30 60 50 50 Q70 40 88 70' stroke='%23C25A00' stroke-width='1.5' fill='none'/></svg>">
+    {% endif %}
     <link rel="stylesheet" href="/static/css/base.css">
     {% block extra_css %}{% endblock %}
 </head>
@@ -68,8 +72,10 @@
                 <label for="menu-toggle" class="sidebar-overlay"></label>
 
                 <a href="/" class="nav-logo">
-                    <img src="https://spacejam-dashboard.s3.us-east-2.amazonaws.com/assets/the-last-spacejam.jpg" alt="Space Jammers Logo">
-                    <h1>Space Jammers</h1>
+                    {% if logo_url %}
+                    <img src="{{ logo_url }}" alt="{{ app_name }} Logo">
+                    {% endif %}
+                    <h1>{{ app_name }}</h1>
                 </a>
             </div>
         </div>
@@ -80,7 +86,7 @@
     </div>
 
     <footer class="site-footer">
-        <p>&copy; 2025 Written by the Tatums</p>
+        <p>&copy; {{ current_year }} {{ app_name }}</p>
         {% if last_update %}
         <p class="last-update">Data updated: <span id="last-update-time" data-utc="{{ last_update.isoformat() }}"></span></p>
         {% endif %}

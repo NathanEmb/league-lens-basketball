@@ -1,15 +1,14 @@
-# Space Jammers Dashboard
+# LeagueLens Basketball
 
-Web dashboard for the Space Jam fantasy basketball league. It is currently hosted at https://space-jammers.com!
+Web dashboard for ESPN fantasy basketball leagues. Pulls data from ESPN's Fantasy API and displays team statistics, player performance, matchups, and trade analysis.
 
-## About
+## Features
 
-This project provides a dashboard for a fantasy basketball league (Space Jammers) that pulls data from ESPN's Fantasy API and displays various statistics and insights. The dashboard includes:
-
-- Team statistics and category rankings
-- Player performance metrics across different timeframes (7, 15, 30 days)
-- Head-to-head matchup comparisons
-- Trade analyzer to evaluate potential trades
+- **Category Rankings**: Visualize team performance across 9 statistical categories
+- **Team Viewer**: Detailed breakdown of individual team strengths, weaknesses, and trends
+- **Matchup Viewer**: Compare head-to-head matchups with detailed statistics
+- **Trade Analyzer**: Evaluate potential trades with projected stat impact analysis
+- **Mobile-Friendly**: Optimized for mobile devices with responsive design and touch-friendly controls
 
 ## Architecture
 
@@ -21,65 +20,80 @@ The application is built using:
 - [Pandas](https://pandas.pydata.org/) for data manipulation and analysis
 - [Jinja2](https://jinja.palletsprojects.com/) for HTML template rendering
 
-The project is containerized with Docker and deployed to AWS.
+The project is containerized with Docker for easy deployment.
 
-## Project Structure
+## Quick Start
 
-```
-src/
-├── app.py          # FastAPI application with routing and endpoints
-├── backend.py      # Core logic for ESPN API data fetching and processing
-├── constants.py    # League configuration and stat categories
-└── frontend/
-    ├── static/     # Static assets (CSS)
-    │   └── css/
-    │       └── base.css
-    └── templates/  # Jinja2 HTML templates
-        ├── base.html
-        ├── index.html
-        ├── matchup.html
-        ├── team.html
-        └── trade.html
+### Prerequisites
+
+- Python 3.12+
+- [uv](https://docs.astral.sh/uv/) (recommended) or pip
+
+### Setup
+
+1. Clone the repository and set up your environment:
+
+```bash
+cp .env.example .env
 ```
 
-## Features
+2. Edit `.env` and set your ESPN league ID:
 
-- **Category Rankings**: Visualize team performance across 9 statistical categories
-- **Team Viewer**: Detailed breakdown of individual team strengths, weaknesses, and trends
-- **Matchup Viewer**: Compare head-to-head matchups with detailed statistics
-- **Trade Analyzer**: Evaluate potential trades with projected stat impact analysis
-- **Mobile-Friendly**: Optimized for mobile devices with responsive design and touch-friendly controls
+```
+LEAGUE_ID=123456
+```
 
-## Development Setup
+3. Install dependencies:
 
-1. Ensure you have Python 3.12+ installed
+```bash
+uv sync
+# OR
+pip install -e .
+```
 
-2. Install dependencies using UV (recommended) or pip:
-   ```bash
-   uv sync
-   # OR
-   pip install -e .
-   ```
+4. Run the application:
 
-3. Run the application locally:
-   ```bash
-   uv run uvicorn src.app:app --reload --port 5006
-   # OR
-   python -m uvicorn src.app:app --reload --port 5006
-   ```
+```bash
+uv run uvicorn src.app:app --reload --port 8000
+# OR
+python -m uvicorn src.app:app --reload --port 8000
+```
 
-4. Open your browser and navigate to `http://localhost:5006`
+5. Open your browser to `http://localhost:8000`
+
+### Using Docker
+
+```bash
+# Build and run with default port
+docker compose up -d
+
+# Or with a custom host port
+HOST_PORT=8080 docker compose up -d
+```
+
+Open `http://localhost:8000` (or your custom port).
+
+## Environment Variables
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `LEAGUE_ID` | Yes | `233677` | Your ESPN fantasy basketball league ID |
+| `APP_NAME` | No | `LeagueLens Basketball` | Dashboard name shown in the header and page titles |
+| `LOGO_URL` | No | Basketball SVG | URL for a custom logo image in the nav bar |
+| `FAVICON_URL` | No | Basketball SVG | URL for a custom favicon |
+| `API_ANALYTICS_KEY` | No | — | API key for [api-analytics.net](https://api-analytics.net) middleware |
+| `YEAR` | No | Current year | Season year for data fetching |
+| `PORT` | No | `8000` | Server port inside the container |
+| `HOST_PORT` | No | `8000` | Host port to bind (Docker only) |
 
 ## Deployment
 
-The application is containerized using Docker:
+The application is a standard Docker container that can be deployed to any container platform (AWS ECS, Fly.io, Railway, etc.):
 
 ```bash
-docker build -t space-jammers .
-docker run -p 5006:5006 space-jammers
+docker build -t leaguelens-basketball .
+docker run -p 8000:8000 --env-file .env leaguelens-basketball
 ```
-
-Deployment to AWS is automated via GitHub Actions upon completion of a Pull Request to main.
 
 ## Contributing
 

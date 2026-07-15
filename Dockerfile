@@ -10,4 +10,6 @@ ENV PYTHONPATH=.
 
 RUN uv sync --frozen 
 
-CMD ["uv", "run",  "uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "5006"] 
+ENV PORT=8000
+
+CMD uv run uvicorn src.app:app --host 0.0.0.0 --port $PORT

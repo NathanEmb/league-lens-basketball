@@ -1,7 +1,7 @@
 [project]
-name = "space-jam-dashboard"
+name = "league-lens-basketball"
 version = "0.1.0"
-description = "Add your description here"
+description = "Fantasy basketball dashboard for ESPN leagues"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

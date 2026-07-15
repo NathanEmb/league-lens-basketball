@@ -1,5 +1,8 @@
-SPACEJAM_LEAGUE_ID = 233677
-YEAR = 2026
+import os
+from datetime import datetime
+
+LEAGUE_ID = int(os.environ.get("LEAGUE_ID", 233677))
+YEAR = int(os.environ.get("YEAR", datetime.now().year))
 
 NINE_CATS = ["PTS", "BLK", "STL", "AST", "REB", "TO", "3PM", "FG%", "FT%"]
 """The 9 standard categories in fantasy basketball."""
