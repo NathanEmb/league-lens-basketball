@@ -2,6 +2,12 @@
 
 Web dashboard for ESPN fantasy basketball leagues. Pulls data from ESPN's Fantasy API and displays team statistics, player performance, matchups, and trade analysis.
 
+## Screenshots
+
+| Homepage | Matchup Viewer |
+|---|---|
+| ![Homepage](docs/images/homepage-desktop.png) | ![Matchup Viewer](docs/images/matchup-desktop.png) |
+
 ## Features
 
 - **Category Rankings**: Visualize team performance across 9 statistical categories
