@@ -1,12 +1,25 @@
 name: build and push image
 
+# Release behavior:
+#   - Pushes to main publish an image only when pyproject.toml contains a
+#     version that does not already have a matching git tag.
+#   - The workflow creates vX.Y.Z after the image is pushed successfully.
+#   - Manual runs can force rebuilding an existing version to recover from a
+#     failed publish.
+
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      force_existing_version:
+        description: Rebuild and push even if the version tag already exists
+        required: false
+        default: false
+        type: boolean
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 env:
@@ -14,31 +27,72 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-push:
+  release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
+
+      - name: Extract version from pyproject.toml
+        id: version
+        run: |
+          VERSION=$(python - <<'PY'
+          import tomllib
+
+          with open("pyproject.toml", "rb") as f:
+              print(tomllib.load(f)["project"]["version"])
+          PY
+          )
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Normalize image name
+        id: image
+        run: |
+          IMAGE="${REGISTRY}/${IMAGE_NAME}"
+          echo "name=${IMAGE,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Check if this version has already been released
+        id: check
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if git ls-remote --exit-code --refs --tags origin "refs/tags/$TAG" >/dev/null; then
+            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.force_existing_version }}" = "true" ]; then
+              echo "Version $TAG already exists, but manual force was requested. Rebuilding image."
+              echo "release=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "Version $TAG has already been released. Bump pyproject.toml to publish a new image."
+              echo "release=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
+            echo "Version $TAG is new. Proceeding with release."
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Log in to the container registry
+        if: steps.check.outputs.release == 'true'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
-            type=sha,prefix=,suffix=,format=short
-
       - name: Build and push
         if: steps.check.outputs.release == 'true'
-        uses: docker/build-push-action@v7.3
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ${{ steps.image.outputs.name }}:${{ steps.version.outputs.version }}
+            ${{ steps.image.outputs.name }}:latest
+
+      - name: Tag release
+        if: steps.check.outputs.release == 'true' && steps.check.outputs.tag_exists == 'false'
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG"
+          git push origin "$TAG"
