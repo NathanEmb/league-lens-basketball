@@ -2,11 +2,35 @@
 
 Web dashboard for ESPN fantasy basketball leagues. Pulls data from ESPN's Fantasy API and displays team statistics, player performance, matchups, and trade analysis.
 
+See it live at [space-jammers.com](https://space-jammers.com) (my own league — if we're not in NBA season, some things won't make sense).
+
 ## Screenshots
 
 | Homepage | Matchup Viewer |
 |---|---|
 | ![Homepage](docs/images/homepage-desktop.png) | ![Matchup Viewer](docs/images/matchup-desktop.png) |
+
+## Quick Start
+
+### Docker Compose (recommended)
+
+Grab the template, set your league ID, and run:
+
+```bash
+curl -O https://raw.githubusercontent.com/NathanEmb/league-lens-basketball/main/compose/compose.yaml
+# edit LEAGUE_ID in compose.yaml, then:
+docker compose up -d
+```
+
+Open `http://localhost:8000`.
+
+### Local development
+
+```bash
+cp .env.example .env          # set your LEAGUE_ID
+uv sync
+uv run uvicorn src.app:app --reload --port 8000
+```
 
 ## Features
 
@@ -16,70 +40,7 @@ Web dashboard for ESPN fantasy basketball leagues. Pulls data from ESPN's Fantas
 - **Trade Analyzer**: Evaluate potential trades with projected stat impact analysis
 - **Mobile-Friendly**: Optimized for mobile devices with responsive design and touch-friendly controls
 
-## Architecture
-
-The application is built using:
-
-- [FastAPI](https://fastapi.tiangolo.com/) for the web backend and API
-- [HTML + CSS](https://developer.mozilla.org/en-US/docs/Web) for the mobile-friendly frontend
-- [ESPN API](https://github.com/cwendt94/espn-api) for fetching fantasy basketball data
-- [Pandas](https://pandas.pydata.org/) for data manipulation and analysis
-- [Jinja2](https://jinja.palletsprojects.com/) for HTML template rendering
-
-The project is containerized with Docker for easy deployment.
-
-## Quick Start
-
-### Prerequisites
-
-- Python 3.12+
-- [uv](https://docs.astral.sh/uv/) (recommended) or pip
-
-### Setup
-
-1. Clone the repository and set up your environment:
-
-```bash
-cp .env.example .env
-```
-
-2. Edit `.env` and set your ESPN league ID:
-
-```
-LEAGUE_ID=123456
-```
-
-3. Install dependencies:
-
-```bash
-uv sync
-# OR
-pip install -e .
-```
-
-4. Run the application:
-
-```bash
-uv run uvicorn src.app:app --reload --port 8000
-# OR
-python -m uvicorn src.app:app --reload --port 8000
-```
-
-5. Open your browser to `http://localhost:8000`
-
-### Using Docker
-
-```bash
-# Build and run with default port
-docker compose up -d
-
-# Or with a custom host port
-HOST_PORT=8080 docker compose up -d
-```
-
-Open `http://localhost:8000` (or your custom port).
-
-## Environment Variables
+## Configuration
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
@@ -89,16 +50,13 @@ Open `http://localhost:8000` (or your custom port).
 | `FAVICON_URL` | No | Basketball SVG | URL for a custom favicon |
 | `YEAR` | No | Current year | Season year for data fetching |
 | `PORT` | No | `8000` | Server port inside the container |
-| `HOST_PORT` | No | `8000` | Host port to bind (Docker only) |
 
-## Deployment
+## Technical Details
 
-The application is a standard Docker container that can be deployed to any container platform (AWS ECS, Fly.io, Railway, etc.):
-
-```bash
-docker build -t leaguelens-basketball .
-docker run -p 8000:8000 --env-file .env leaguelens-basketball
-```
+- **Backend**: [FastAPI](https://fastapi.tiangolo.com/) with server-rendered Jinja2 templates
+- **Data**: [ESPN API](https://github.com/cwendt94/espn-api) + [Pandas](https://pandas.pydata.org/) for transformations
+- **Frontend**: Vanilla CSS (mobile-first dark theme) + Feather Icons, no JS framework
+- **Deployment**: Standard Docker container — works on any platform (Fly.io, Railway, AWS ECS, etc.)
 
 ## Contributing
 
