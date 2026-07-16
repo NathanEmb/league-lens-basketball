@@ -69,6 +69,7 @@ uv run uvicorn src.app:app --reload --port 8000
 As is true with many (all?) software development projects these days, LLM based tools were used in the development of this project. Primarily in supporting the frontend development, writing CSS/HTML/JS where necessary. As a summary:
 
 | Section | AI Use Description |
+|---|---|
 | Backend | AI Assisted, primarily hand coded, fully reviewed |
 | Frontend | AI writtenn, lightly reviewed |
 | Deployment Instructions and Docs| Handwritten docs, AI assisted planning | 
