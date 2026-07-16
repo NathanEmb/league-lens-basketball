@@ -71,6 +71,6 @@ As is true with many (all?) software development projects these days, LLM based 
 | Section | AI Use Description |
 |---|---|
 | Backend | AI Assisted, primarily hand coded, fully reviewed |
-| Frontend | AI writtenn, lightly reviewed |
-| Deployment Instructions and Docs| Handwritten docs, AI assisted planning |
+| Frontend | AI written, lightly reviewed |
+| Deployment Instructions and Docs| Human designed, AI written |
 | This disclosure | Fully human written | 
