@@ -1,11 +1,13 @@
 name: build and push image
 
-# Release behavior:
-#   - Pushes to main publish an image only when pyproject.toml contains a
-#     version that does not already have a matching git tag.
-#   - The workflow creates vX.Y.Z after the image is pushed successfully.
-#   - Manual runs can force rebuilding an existing version to recover from a
-#     failed publish.
+# Automates releases based on pyproject.toml's version:
+#   1. On every push to main, check if the current version has
+#      already been tagged/released.
+#   2. If it's a NEW version, create the git tag (vX.Y.Z), then
+#      build and push the image tagged with both the version and
+#      "latest".
+#   3. If the version hasn't changed, the job exits early —
+#      no image is published. Bump the version to release.
 
 on:
   push:
@@ -70,6 +72,15 @@ jobs:
             echo "release=true" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Tag release
+        if: steps.check.outputs.release == 'true'
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG"
+          git push origin "$TAG"
+
       - name: Log in to the container registry
         if: steps.check.outputs.release == 'true'
         uses: docker/login-action@v3
@@ -85,14 +96,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ steps.image.outputs.name }}:${{ steps.version.outputs.version }}
-            ${{ steps.image.outputs.name }}:latest
-
-      - name: Tag release
-        if: steps.check.outputs.release == 'true' && steps.check.outputs.tag_exists == 'false'
-        run: |
-          TAG="${{ steps.version.outputs.tag }}"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "$TAG"
-          git push origin "$TAG"
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
