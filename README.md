@@ -49,7 +49,6 @@ uv run uvicorn src.app:app --reload --port 8000
 | `LOGO_URL` | No | Basketball SVG | URL for a custom logo image in the nav bar |
 | `FAVICON_URL` | No | Basketball SVG | URL for a custom favicon |
 | `YEAR` | No | Current year | Season year for data fetching |
-| `PORT` | No | `8000` | Server port inside the container |
 
 ## Technical Details
 
