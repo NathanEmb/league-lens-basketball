@@ -1,13 +1,11 @@
 name: build and push image
 
-# Automates releases based on pyproject.toml's version:
-#   1. On every push to main, check if the current version has
-#      already been tagged/released.
-#   2. If it's a NEW version, create the git tag (vX.Y.Z), then
-#      build and push the image tagged with both the version and
-#      "latest".
-#   3. If the version hasn't changed, the job exits early —
-#      no image is published. Bump the version to release.
+# Release behavior:
+#   - Pushes to main publish an image only when pyproject.toml contains a
+#     version that does not already have a matching git tag.
+#   - The workflow creates vX.Y.Z after the image is pushed successfully.
+#   - Manual runs can force rebuilding an existing version to recover from a
+#     failed publish.
 
 on:
   push:
