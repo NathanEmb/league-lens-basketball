@@ -1,5 +1,15 @@
-SPACEJAM_LEAGUE_ID = 233677
-YEAR = 2026
+import os
+from datetime import datetime
+
+try:
+    LEAGUE_ID = int(os.environ["LEAGUE_ID"])
+except (ValueError, TypeError, KeyError):
+    raise ValueError("Invalid environment variable values for LEAGUE_ID or YEAR. Ensure they exist and are integers.")
+
+try:
+    YEAR = int(os.environ.get("YEAR", datetime.now().year))
+except (ValueError, TypeError):
+    raise ValueError("Invalid environment variable value for YEAR. Ensure it is an integer.")
 
 NINE_CATS = ["PTS", "BLK", "STL", "AST", "REB", "TO", "3PM", "FG%", "FT%"]
 """The 9 standard categories in fantasy basketball."""

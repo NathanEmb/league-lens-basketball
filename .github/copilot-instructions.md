@@ -1,4 +1,4 @@
-# Space Jammers Dashboard - Copilot Instructions
+# LeagueLens Basketball - Copilot Instructions
 
 ## Architecture Overview
 

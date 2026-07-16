@@ -1,5 +1,3 @@
-"""FastAPI application for Space Jammers Dashboard."""
-
 import asyncio
 import logging
 import os
@@ -7,7 +5,6 @@ import zoneinfo
 from contextlib import asynccontextmanager
 from datetime import datetime
 
-from api_analytics.fastapi import Analytics
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -26,7 +23,9 @@ for handler in logging.getLogger().handlers:
 
 # Configuration
 REFRESH_INTERVAL_SECONDS = 3600  # 1 hour
-API_ANALYTICS_KEY = os.environ.get("API_ANALYTICS_KEY")
+APP_NAME = os.environ.get("APP_NAME", "LeagueLens Basketball")
+LOGO_URL = os.environ.get("LOGO_URL")
+FAVICON_URL = os.environ.get("FAVICON_URL")
 
 # Global data cache - refreshed hourly
 league_data = None
@@ -80,10 +79,7 @@ async def lifespan(app: FastAPI):
         pass
 
 
-app = FastAPI(title="Space Jammers Dashboard", lifespan=lifespan)
-if API_ANALYTICS_KEY:
-    logger.info(" Adding API Analytics middleware")
-    app.add_middleware(Analytics, api_key=API_ANALYTICS_KEY)
+app = FastAPI(title=APP_NAME, lifespan=lifespan)
 # Setup templates
 templates = Jinja2Templates(directory="src/frontend/templates")
 
@@ -103,10 +99,14 @@ async def home(request: Request):
     league_df_dict = league_df.to_dict("records")
 
     return templates.TemplateResponse(
+        request,
         "index.html",
         {
-            "request": request,
             "page_type": "home",
+            "app_name": APP_NAME,
+            "logo_url": LOGO_URL,
+            "favicon_url": FAVICON_URL,
+            "current_year": datetime.now().year,
             "league_data": league_df_dict,
             "columns": list(const.CAT_ONLY_DATA_RANKED_TABLE_DEF.keys()),
             "teams": teams,
@@ -136,10 +136,14 @@ async def team_viewer(request: Request, team_name: str):
     strengths, weaknesses, punts = be.get_team_breakdown(team_data)
 
     return templates.TemplateResponse(
+        request,
         "team.html",
         {
-            "request": request,
             "page_type": "team",
+            "app_name": APP_NAME,
+            "logo_url": LOGO_URL,
+            "favicon_url": FAVICON_URL,
+            "current_year": datetime.now().year,
             "team_name": team_name,
             "team": team_obj,
             "standing": team_obj.standing,
@@ -245,10 +249,14 @@ async def matchup_viewer(request: Request, matchup_index: int = 0):
             )
 
     return templates.TemplateResponse(
+        request,
         "matchup.html",
         {
-            "request": request,
             "page_type": "matchup",
+            "app_name": APP_NAME,
+            "logo_url": LOGO_URL,
+            "favicon_url": FAVICON_URL,
+            "current_year": datetime.now().year,
             "home_team": box_score.home_team,
             "away_team": box_score.away_team,
             "home_wins": box_score.home_wins,
@@ -274,10 +282,14 @@ async def trade_analyzer(request: Request):
     players_by_team = be.get_players_by_team(league_data)
 
     return templates.TemplateResponse(
+        request,
         "trade.html",
         {
-            "request": request,
             "page_type": "trade",
+            "app_name": APP_NAME,
+            "logo_url": LOGO_URL,
+            "favicon_url": FAVICON_URL,
+            "current_year": datetime.now().year,
             "players_by_team": players_by_team,
             "teams": teams,
             "matchups": matchups_cache,
@@ -341,4 +353,5 @@ async def analyze_trade(request: Request):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=5006)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

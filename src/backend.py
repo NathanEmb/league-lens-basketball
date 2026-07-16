@@ -8,7 +8,7 @@ from espn_api.basketball import League, Team
 import src.constants as const
 
 
-def get_league(league_id: int = const.SPACEJAM_LEAGUE_ID, year: int = const.YEAR) -> League:
+def get_league(league_id: int = const.LEAGUE_ID, year: int = const.YEAR) -> League:
     """Get the league object for the specified league_id and year."""
     league = League(league_id, year)
     league.team_dict = {team.team_name: team for team in league.teams}

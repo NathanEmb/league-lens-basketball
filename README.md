@@ -1,45 +1,35 @@
-# Space Jammers Dashboard
+# LeagueLens Basketball
 
-Web dashboard for the Space Jam fantasy basketball league. It is currently hosted at https://space-jammers.com!
+Web dashboard for ESPN fantasy basketball leagues. Pulls data from ESPN's Fantasy API and displays team statistics, player performance, matchups, and trade analysis.
 
-## About
+See it live at [space-jammers.com](https://space-jammers.com) (my own league — if we're not in NBA season, some things won't make sense).
 
-This project provides a dashboard for a fantasy basketball league (Space Jammers) that pulls data from ESPN's Fantasy API and displays various statistics and insights. The dashboard includes:
+## Screenshots
 
-- Team statistics and category rankings
-- Player performance metrics across different timeframes (7, 15, 30 days)
-- Head-to-head matchup comparisons
-- Trade analyzer to evaluate potential trades
+| Homepage | Matchup Viewer |
+|---|---|
+| ![Homepage](docs/images/homepage-desktop.png) | ![Matchup Viewer](docs/images/matchup-desktop.png) |
 
-## Architecture
+## Quick Start
 
-The application is built using:
+### Docker Compose (recommended)
 
-- [FastAPI](https://fastapi.tiangolo.com/) for the web backend and API
-- [HTML + CSS](https://developer.mozilla.org/en-US/docs/Web) for the mobile-friendly frontend
-- [ESPN API](https://github.com/cwendt94/espn-api) for fetching fantasy basketball data
-- [Pandas](https://pandas.pydata.org/) for data manipulation and analysis
-- [Jinja2](https://jinja.palletsprojects.com/) for HTML template rendering
+Grab the template, set your league ID, and run:
 
-The project is containerized with Docker and deployed to AWS.
-
-## Project Structure
-
+```bash
+curl -O https://raw.githubusercontent.com/NathanEmb/league-lens-basketball/main/compose/compose.yaml
+# edit LEAGUE_ID in compose.yaml, then:
+docker compose up -d
 ```
-src/
-├── app.py          # FastAPI application with routing and endpoints
-├── backend.py      # Core logic for ESPN API data fetching and processing
-├── constants.py    # League configuration and stat categories
-└── frontend/
-    ├── static/     # Static assets (CSS)
-    │   └── css/
-    │       └── base.css
-    └── templates/  # Jinja2 HTML templates
-        ├── base.html
-        ├── index.html
-        ├── matchup.html
-        ├── team.html
-        └── trade.html
+
+Open `http://localhost:8000`.
+
+### Local development
+
+```bash
+cp .env.example .env          # set your LEAGUE_ID
+uv sync
+uv run uvicorn src.app:app --reload --port 8000
 ```
 
 ## Features
@@ -50,36 +40,22 @@ src/
 - **Trade Analyzer**: Evaluate potential trades with projected stat impact analysis
 - **Mobile-Friendly**: Optimized for mobile devices with responsive design and touch-friendly controls
 
-## Development Setup
+## Configuration
 
-1. Ensure you have Python 3.12+ installed
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `LEAGUE_ID` | Yes | `233677` | Your ESPN fantasy basketball league ID |
+| `APP_NAME` | No | `LeagueLens Basketball` | Dashboard name shown in the header and page titles |
+| `LOGO_URL` | No | Basketball SVG | URL for a custom logo image in the nav bar |
+| `FAVICON_URL` | No | Basketball SVG | URL for a custom favicon |
+| `YEAR` | No | Current year | Season year for data fetching |
 
-2. Install dependencies using UV (recommended) or pip:
-   ```bash
-   uv sync
-   # OR
-   pip install -e .
-   ```
+## Technical Details
 
-3. Run the application locally:
-   ```bash
-   uv run uvicorn src.app:app --reload --port 5006
-   # OR
-   python -m uvicorn src.app:app --reload --port 5006
-   ```
-
-4. Open your browser and navigate to `http://localhost:5006`
-
-## Deployment
-
-The application is containerized using Docker:
-
-```bash
-docker build -t space-jammers .
-docker run -p 5006:5006 space-jammers
-```
-
-Deployment to AWS is automated via GitHub Actions upon completion of a Pull Request to main.
+- **Backend**: [FastAPI](https://fastapi.tiangolo.com/) with server-rendered Jinja2 templates
+- **Data**: [ESPN API](https://github.com/cwendt94/espn-api) + [Pandas](https://pandas.pydata.org/) for transformations
+- **Frontend**: Vanilla CSS (mobile-first dark theme) + Feather Icons, no JS framework
+- **Deployment**: Standard Docker container — works on any platform (Fly.io, Railway, AWS ECS, etc.)
 
 ## Contributing
 
@@ -87,3 +63,14 @@ Deployment to AWS is automated via GitHub Actions upon completion of a Pull Requ
 2. Use appropriate docstrings for new functions
 3. Test your changes locally before submitting PRs
 4. Ensure mobile responsiveness for any UI changes
+
+## AI Disclosure
+
+As is true with many (all?) software development projects these days, LLM based tools were used in the development of this project. Primarily in supporting the frontend development, writing CSS/HTML/JS where necessary. As a summary:
+
+| Section | AI Use Description |
+|---|---|
+| Backend | AI Assisted, primarily hand coded, fully reviewed |
+| Frontend | AI written, lightly reviewed |
+| Deployment Instructions and Docs| Human designed, AI written |
+| This disclosure | Fully human written | 
